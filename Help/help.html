@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ClearVault Help</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --accent: #1b7a6a;
+    --border: #d0d0d0;
+    --code-bg: #f2f2f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1e;
+      --fg: #eaeaea;
+      --accent: #4fd6bd;
+      --border: #444;
+      --code-bg: #2a2a2a;
+    }
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 46em;
+    margin: 0 auto;
+    padding: 1.5em;
+  }
+  h1 { border-bottom: 3px solid var(--accent); padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.2em; margin-top: 1.8em; }
+  code, kbd {
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-family: Consolas, monospace;
+  }
+  kbd { border: 1px solid var(--border); }
+  nav ul { line-height: 1.9; }
+  .note {
+    border-left: 4px solid var(--accent);
+    padding: 0.6em 1em;
+    background: var(--code-bg);
+    margin: 1em 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>ClearVault Help</h1>
+<p>ClearVault is a fully accessible, native Windows client for Dropbox, built from scratch for screen reader users. This page is your reference for setup, every feature, and known gotchas.</p>
+
+<nav aria-label="Table of contents">
+<h2>Contents</h2>
+<ul>
+  <li><a href="#setup">Getting started: connecting your Dropbox account</a></li>
+  <li><a href="#accounts">Signing in, switching, and removing accounts</a></li>
+  <li><a href="#browsing">Browsing files</a></li>
+  <li><a href="#management">Creating, renaming, moving, deleting, uploading</a></li>
+  <li><a href="#sharing">Sharing and copying links</a></li>
+  <li><a href="#search">Search</a></li>
+  <li><a href="#notifications">Background notifications and the tray icon</a></li>
+  <li><a href="#preferences">Preferences</a></li>
+  <li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</nav>
+
+<h2 id="setup">Getting started: connecting your Dropbox account</h2>
+<p>ClearVault does not ship with a shared Dropbox connection. Each person who installs it creates their own free Dropbox API app -- this keeps your Dropbox activity private to your own app registration, with no shared limits between users. It takes about two minutes and only needs doing once.</p>
+<ol>
+  <li>Go to <code>https://www.dropbox.com/developers/apps</code> and sign in with your Dropbox account.</li>
+  <li>Choose <strong>Create app</strong>, then <strong>Scoped access</strong>, then either <strong>Full Dropbox</strong> or <strong>App folder</strong> access, give it any name, and create it.</li>
+  <li>On the app's <strong>Settings</strong> tab, find <strong>Redirect URIs</strong>. Type this exact address into the box and press the <strong>Add</strong> button right next to it -- that saves it immediately, there is no separate Submit button for this field:
+    <br><code>http://127.0.0.1:52874/clearvault/</code>
+  </li>
+  <li>Also on Settings, find <strong>Allow public clients (Implicit Grant &amp; PKCE)</strong> and make sure it is switched to <strong>Allow</strong>.</li>
+  <li>Go to the <strong>Permissions</strong> tab and enable: <code>account_info.read</code>, <code>files.metadata.read</code>, <code>files.metadata.write</code>, <code>files.content.read</code>, <code>files.content.write</code>, <code>sharing.read</code>, <code>sharing.write</code>. Press Submit on that tab (Permissions changes do have a Submit button, unlike Settings).</li>
+  <li>Back on Settings, copy the <strong>App key</strong> value.</li>
+  <li>Paste it into ClearVault's first-run setup screen (it appears automatically the first time you run the app).</li>
+</ol>
+<div class="note">The App key is a public client identifier, not a secret -- it is fine that ClearVault stores it in plain text. Never paste your App <em>secret</em> or any "generated access token" from that console anywhere; ClearVault never needs them, since it signs in through your real browser instead.</div>
+
+<h2 id="accounts">Signing in, switching, and removing accounts</h2>
+<p>From the main window:</p>
+<ul>
+  <li><strong>Add account...</strong> opens your default browser to Dropbox's own sign-in page. Finish signing in there, then return to ClearVault.</li>
+  <li>All signed-in accounts appear in one list. Select one and press <strong>Switch to selected</strong> to make it active -- no signing out required to change accounts.</li>
+  <li><strong>Remove (sign out)</strong> removes an account from ClearVault only. Your files stay safely in Dropbox.</li>
+</ul>
+<div class="note">If your browser is already logged into dropbox.com as one account, clicking "Add account" again may skip straight to a consent screen for that <em>same</em> account instead of asking you to log in. To add a genuinely different account, sign into it in a Private/Incognito browser window first, then click "Add account" in ClearVault.</div>
+
+<h2 id="browsing">Browsing files</h2>
+<p>Press <strong>Browse files</strong> on the main window to open the file browser for the active account. It is a plain list of the current folder's contents (name, type, size, modified date):</p>
+<ul>
+  <li><kbd>Enter</kbd> or <strong>Open</strong> -- on a folder, goes into it; on a file, downloads a temporary copy and opens it with its normal default app.</li>
+  <li><kbd>Backspace</kbd> or <strong>Up one level</strong> -- goes to the parent folder.</li>
+  <li><strong>Download...</strong> -- saves a permanent copy of the selected file wherever you choose.</li>
+  <li><strong>Refresh</strong> -- reloads the current folder.</li>
+</ul>
+
+<h2 id="management">Creating, renaming, moving, deleting, uploading</h2>
+<ul>
+  <li><strong>New folder...</strong> -- creates a folder inside the one you're currently browsing.</li>
+  <li><strong>Upload...</strong> -- pick one or more local files to upload into the current folder.</li>
+  <li><strong>Rename...</strong> or <kbd>F2</kbd> -- rename the selected item.</li>
+  <li><strong>Delete...</strong> or <kbd>Delete</kbd> -- asks for confirmation first. Dropbox keeps deleted items recoverable for a while, so this is not an instant, unrecoverable loss.</li>
+  <li><strong>Move to...</strong> -- asks for a destination folder path (prefilled with your current folder so you can just edit it). There is no visual folder-picker for this yet.</li>
+</ul>
+
+<h2 id="sharing">Sharing and copying links</h2>
+<p><strong>Share / Copy link</strong> gets (or reuses, if one already exists) a Dropbox share link for the selected item and copies it straight to your clipboard.</p>
+<p>In Preferences, <strong>"Direct-download links"</strong> controls whether copied links end in <code>dl=1</code> (downloads the file immediately when opened) instead of Dropbox's default <code>dl=0</code> (opens a preview page first). On by default.</p>
+
+<h2 id="search">Search</h2>
+<p><strong>Search...</strong> in the file browser prompts for a search term and opens a results list (name, type, folder, modified date). Press <strong>Open</strong> or <kbd>Enter</kbd> on a file result to open it. Folders in results aren't directly openable from that window -- use the Folder column to know where to browse to.</p>
+
+<h2 id="notifications">Background notifications and the tray icon</h2>
+<p>ClearVault keeps running in the notification area (system tray) after you close the main window -- closing the window just hides it, it does not quit the app. This is what lets background notifications keep working.</p>
+<ul>
+  <li>The tray icon's right-click menu is a plain native Windows menu: <strong>Open ClearVault</strong>, <strong>Check for changes now</strong>, and <strong>Exit ClearVault</strong>.</li>
+  <li><strong>Exit ClearVault</strong> from that menu is the only way to fully quit -- closing the window alone does not.</li>
+  <li>About every 90 seconds, ClearVault checks your active account for changes and, if anything changed, shows a short tray notification (for example, "Changed: report.pdf"). This uses Dropbox's ordinary delta API, not instant push, so there can be up to about a minute and a half of delay.</li>
+</ul>
+
+<h2 id="preferences">Preferences</h2>
+<p>Reached via the <strong>Preferences...</strong> button on the main window. Every setting saves immediately when you change it -- there's no separate Save step.</p>
+<ul>
+  <li><strong>Direct-download links</strong> -- see Sharing above.</li>
+  <li><strong>Enable Team integration</strong> -- only relevant if your Dropbox account is a member of a Dropbox Business/Team with a team space; does nothing for a personal account. Lets team-space folders show up when browsing.</li>
+  <li><strong>Notify me about Dropbox changes</strong> -- turns the tray notifications on or off. Turning it off does not stop ClearVault from running in the tray, only the notifications themselves.</li>
+</ul>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3>"This app has reached its user limit"</h3>
+<p>A new Dropbox API app starts with a low limit on how many Dropbox accounts it can be linked to while in development status. Go to your app on <code>https://www.dropbox.com/developers/apps</code> and press <strong>"Enable additional users"</strong> -- this raises the limit to 500 without needing Dropbox's full production review, which is plenty for one person's own app.</p>
+
+<h3>"Invalid redirect_uri" when signing in</h3>
+<p>The redirect URI registered on your Dropbox app doesn't exactly match <code>http://127.0.0.1:52874/clearvault/</code>, including the trailing slash. Double check it under Settings &gt; Redirect URIs, and remember: typing it into the box isn't enough by itself, you also need to press the <strong>Add</strong> button next to it.</p>
+
+<h3>Sign-in seems to silently do nothing, or signs you into the wrong account</h3>
+<p>See the note under <a href="#accounts">Signing in, switching, and removing accounts</a> above about your browser already being logged into a different Dropbox account.</p>
+
+</body>
+</html>
