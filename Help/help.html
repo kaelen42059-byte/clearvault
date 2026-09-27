@@ -121,9 +121,10 @@
 <h2 id="notifications">Background notifications and the tray icon</h2>
 <p>ClearVault keeps running in the notification area (system tray) after you close the main window -- closing the window just hides it, it does not quit the app. This is what lets background notifications keep working.</p>
 <ul>
-  <li>The tray icon's right-click menu is a plain native Windows menu: <strong>Open ClearVault</strong>, <strong>Check for changes now</strong>, and <strong>Exit ClearVault</strong>.</li>
+  <li>The tray icon's right-click menu is a plain native Windows menu. It starts with two status lines -- <strong>Status</strong> (for example "Up to date (checked 3:42 PM)") and <strong>Last change</strong> -- followed by <strong>Open ClearVault</strong>, <strong>Check for changes now</strong>, and <strong>Exit ClearVault</strong>.</li>
+  <li>The current status is also the tray icon's tooltip, so arrowing onto the ClearVault icon in the notification area reads it, and it's shown in the main window's status bar (your screen reader's "read status bar" command, such as <kbd>NVDA+End</kbd>, reads it). Possible states: <strong>Indexing</strong> (setting a starting point for a newly watched account), <strong>Checking for changes</strong>, <strong>Up to date</strong>, <strong>Can't reach Dropbox, retrying</strong> (with the reason), <strong>Not signed in</strong>, and <strong>Not set up yet</strong>.</li>
   <li><strong>Exit ClearVault</strong> from that menu is the only way to fully quit -- closing the window alone does not.</li>
-  <li>About every 90 seconds, ClearVault checks your active account for changes and, if anything changed, shows a short tray notification (for example, "Changed: report.pdf"). This uses Dropbox's ordinary delta API, not instant push, so there can be up to about a minute and a half of delay.</li>
+  <li>About every 90 seconds, ClearVault checks your active account for changes and, if anything changed, shows a short tray notification (for example, "Changed: report.pdf"). This uses Dropbox's ordinary delta API, not instant push, so there can be up to about a minute and a half of delay. ClearVault remembers where it left off, so changes made while it wasn't running are reported the next time it starts. If you missed a notification, the <strong>Last change</strong> line shows the most recent one.</li>
 </ul>
 
 <h2 id="preferences">Preferences</h2>

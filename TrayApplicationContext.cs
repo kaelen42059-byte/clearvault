@@ -7,14 +7,17 @@ namespace ClearVault;
 // readable with arrow keys the normal way.
 sealed class TrayApplicationContext : ApplicationContext
 {
+    // NotifyIcon.Text throws if set to anything longer than this.
+    private const int MaxTrayTooltipLength = 127;
+
     private readonly NotifyIcon _trayIcon;
     private readonly MainForm _mainForm;
     private readonly ChangeNotifier _changeNotifier;
+    private readonly ToolStripItem _statusItem;
+    private readonly ToolStripItem _lastChangeItem;
 
     public TrayApplicationContext()
     {
-        _mainForm = new MainForm();
-
         _trayIcon = new NotifyIcon
         {
             Icon = AppIcon.Load(),
@@ -24,9 +27,18 @@ sealed class TrayApplicationContext : ApplicationContext
         _trayIcon.DoubleClick += (_, _) => ShowMainForm();
 
         _changeNotifier = new ChangeNotifier(_trayIcon);
-        _changeNotifier.Start();
+        _mainForm = new MainForm(_changeNotifier);
 
         var menu = new ContextMenuStrip();
+
+        // Status lines first, so arrowing into the menu reads the current
+        // state straight away. Selecting either one just opens the window.
+        _statusItem = menu.Items.Add("");
+        _statusItem.Click += (_, _) => ShowMainForm();
+        _lastChangeItem = menu.Items.Add("");
+        _lastChangeItem.Click += (_, _) => ShowMainForm();
+
+        menu.Items.Add(new ToolStripSeparator());
 
         var openItem = menu.Items.Add("&Open ClearVault");
         openItem.Click += (_, _) => ShowMainForm();
@@ -43,7 +55,26 @@ sealed class TrayApplicationContext : ApplicationContext
 
         _trayIcon.ContextMenuStrip = menu;
 
+        _changeNotifier.StatusChanged += (_, _) => UpdateTrayStatus();
+        UpdateTrayStatus();
+        _changeNotifier.Start();
+
         ShowMainForm();
+    }
+
+    // The tooltip is what a screen reader reads when arrowing onto the icon
+    // in the notification area, so the sync status lives there too.
+    private void UpdateTrayStatus()
+    {
+        var tooltip = $"ClearVault: {_changeNotifier.Status}";
+        _trayIcon.Text = tooltip.Length > MaxTrayTooltipLength
+            ? tooltip[..(MaxTrayTooltipLength - 3)] + "..."
+            : tooltip;
+
+        // "&&" so a literal ampersand in a status or file name isn't treated
+        // as a menu access key.
+        _statusItem.Text = $"Status: {_changeNotifier.Status}".Replace("&", "&&");
+        _lastChangeItem.Text = $"Last change: {_changeNotifier.LastChange ?? "none since ClearVault started"}".Replace("&", "&&");
     }
 
     private void ShowMainForm()
@@ -56,6 +87,7 @@ sealed class TrayApplicationContext : ApplicationContext
     private void ExitApplication()
     {
         _changeNotifier.Stop();
+        _changeNotifier.Dispose();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
         _mainForm.AllowClose = true;
