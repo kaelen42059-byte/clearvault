@@ -5,6 +5,7 @@ namespace ClearVault;
 sealed class MainForm : Form
 {
     private readonly TokenStore _tokenStore = new();
+    private readonly ChangeNotifier _changeNotifier;
     private string? _appKey;
 
     // Set by TrayApplicationContext right before a real exit. Otherwise,
@@ -19,6 +20,7 @@ sealed class MainForm : Form
     private readonly Button _browseFilesButton;
     private readonly Button _preferencesButton;
     private readonly TextBox _statusBox;
+    private readonly ToolStripStatusLabel _syncStatusLabel;
 
     private sealed class AccountItem
     {
@@ -30,8 +32,10 @@ sealed class MainForm : Form
                 : $"{Account.DisplayName} ({Account.Email})";
     }
 
-    public MainForm()
+    public MainForm(ChangeNotifier changeNotifier)
     {
+        _changeNotifier = changeNotifier;
+
         Text = "ClearVault";
         ClientSize = new Size(560, 400);
         StartPosition = FormStartPosition.CenterScreen;
@@ -133,6 +137,23 @@ sealed class MainForm : Form
             Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
         };
 
+        // A real Windows status bar, so a screen reader's "read status bar"
+        // command (NVDA+End, JAWS Insert+Page Down) reports the sync state.
+        // Updated quietly -- no announcement on every 90-second check.
+        _syncStatusLabel = new ToolStripStatusLabel
+        {
+            Spring = true,
+            TextAlign = ContentAlignment.MiddleLeft,
+        };
+        var statusStrip = new StatusStrip
+        {
+            AccessibleName = "Sync status",
+            SizingGrip = false,
+        };
+        statusStrip.Items.Add(_syncStatusLabel);
+        UpdateSyncStatus();
+        _changeNotifier.StatusChanged += (_, _) => UpdateSyncStatus();
+
         Controls.Add(accountsLabel);
         Controls.Add(_accountList);
         Controls.Add(_addAccountButton);
@@ -142,6 +163,7 @@ sealed class MainForm : Form
         Controls.Add(_preferencesButton);
         Controls.Add(statusLabel);
         Controls.Add(_statusBox);
+        Controls.Add(statusStrip);
 
         Load += MainForm_Load;
         HelpRequested += (_, e) => { HelpViewer.Open(); e.Handled = true; };
@@ -174,6 +196,7 @@ sealed class MainForm : Form
 
             _appKey = setup.EnteredAppKey;
             AppConfig.SaveAppKey(_appKey);
+            _ = _changeNotifier.CheckNowAsync();
         }
 
         RefreshAccountList();
@@ -196,6 +219,17 @@ sealed class MainForm : Form
     }
 
     private void SetStatus(string message) => AccessibleAnnouncer.Announce(_statusBox, message);
+
+    private void UpdateSyncStatus()
+    {
+        var text = $"Sync status: {_changeNotifier.Status}";
+        if (_changeNotifier.LastChange is { } lastChange)
+        {
+            text += $". Last change: {lastChange}";
+        }
+        _syncStatusLabel.Text = text.Replace("&", "&&");
+        _syncStatusLabel.AccessibleName = text;
+    }
 
     private void SetControlsEnabled(bool enabled)
     {
@@ -221,6 +255,7 @@ sealed class MainForm : Form
             var result = await AuthService.SignInAsync(_appKey, CancellationToken.None);
             _tokenStore.AddOrUpdateAccount(result.AccountId, result.Email, result.DisplayName, result.RefreshToken);
             RefreshAccountList();
+            _ = _changeNotifier.CheckNowAsync();
             SetStatus($"Signed in as {result.DisplayName} ({result.Email}). This is now the active account.");
         }
         catch (Exception ex)
@@ -243,6 +278,7 @@ sealed class MainForm : Form
 
         _tokenStore.SetActiveAccount(item.Account.AccountId);
         RefreshAccountList();
+        _ = _changeNotifier.CheckNowAsync();
         SetStatus($"Switched to {item.Account.DisplayName} ({item.Account.Email}).");
     }
 
@@ -268,6 +304,7 @@ sealed class MainForm : Form
 
         _tokenStore.RemoveAccount(item.Account.AccountId);
         RefreshAccountList();
+        _ = _changeNotifier.CheckNowAsync();
         SetStatus($"Signed out of {item.Account.Email}.");
     }
 

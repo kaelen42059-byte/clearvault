@@ -23,7 +23,7 @@ ClearVault doesn't ship with a shared Dropbox connection — each install create
 - **File management** — new folder, upload, rename (`F2`), delete (`Delete`), move.
 - **Search** — full-text search across your Dropbox.
 - **Sharing** — get or reuse a share link and copy it to the clipboard in one step; optional direct-download link rewriting.
-- **Background notifications** — ClearVault keeps running in the system tray and shows a short notification when something changes in your Dropbox (checked roughly every 90 seconds).
+- **Background notifications** — ClearVault keeps running in the system tray and shows a short notification when something changes in your Dropbox (checked roughly every 90 seconds), including changes made while it wasn't running. The current status (Up to date, Checking for changes, Can't reach Dropbox...) is shown in the main window's status bar and the tray icon's tooltip and menu.
 - **In-app help** — press `F1` anywhere in the app.
 
 ## Keyboard shortcuts
